@@ -51,12 +51,12 @@ func (b *BackgroundActivityService) process(ctx context.Context) bool {
 		return false
 	}
 
-	if lastPeriodDate.Add(b.cfg.EventsPeriodDuration).After(nowDate) {
+	if (*lastPeriodDate).Add(b.cfg.EventsPeriodDuration).After(nowDate) {
 		//TODO: logging
 		return false
 	}
 
-	if err = b.calculateEventsCount(ctx, *lastPeriodDate, nowDate); err != nil {
+	if err = b.calculateEventsCount(ctx, *lastPeriodDate, (*lastPeriodDate).Add(b.cfg.EventsPeriodDuration)); err != nil {
 		return false
 	}
 
