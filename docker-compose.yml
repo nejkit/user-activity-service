@@ -1,0 +1,13 @@
+services:
+  storage:
+    image: postgres:latest
+
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: activityservice
+
+
+    ports:
+      - "5432:5432"
+

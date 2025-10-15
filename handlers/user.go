@@ -65,7 +65,7 @@ func (u *UserHandler) HandleRemoveUser(ctx *gin.Context) {
 	u.Wg.Add(1)
 	defer u.Wg.Done()
 
-	userIDParam := ctx.Param(":id")
+	userIDParam := ctx.Param("id")
 
 	userID, err := uuid.Parse(userIDParam)
 
@@ -94,7 +94,7 @@ func (u *UserHandler) HandleGetUserName(ctx *gin.Context) {
 	u.Wg.Add(1)
 	defer u.Wg.Done()
 
-	userIDParam := ctx.Param(":id")
+	userIDParam := ctx.Param("id")
 
 	userID, err := uuid.Parse(userIDParam)
 

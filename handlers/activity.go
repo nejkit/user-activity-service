@@ -191,7 +191,7 @@ func (a *ActivityHandler) HandleGetUserActivityStatistic(ctx *gin.Context) {
 		return
 	}
 
-	response, err := a.activityService.GetUserActivities(ctx, query)
+	response, err := a.activityService.GetUserActivityHistories(ctx, query)
 
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)

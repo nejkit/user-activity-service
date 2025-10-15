@@ -13,11 +13,11 @@ type SaveUserActivityRequestDto struct {
 }
 
 type GetUserActivitiesQuery struct {
-	UserID string `query:"userId" validate:"required,uuid"`
+	UserID string `form:"userId" validate:"required,uuid"`
 	GetActivitiesQuery
 }
 
 type GetActivitiesQuery struct {
-	FromDate *time.Time `query:"fromDate,omitempty"`
-	ToDate   *time.Time `query:"toDate,omitempty"`
+	FromDate *time.Time `form:"fromDate,omitempty"`
+	ToDate   *time.Time `form:"toDate,omitempty"`
 }

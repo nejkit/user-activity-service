@@ -6,11 +6,11 @@ import (
 )
 
 type UserActivityDao struct {
-	ID         uuid.UUID              `db:"id"`
-	UserID     uuid.UUID              `db:"user_id"`
-	ActionDate time.Time              `db:"action_date"`
-	Action     string                 `db:"action"`
-	Metadata   map[string]interface{} `db:"metadata"`
+	ID         uuid.UUID `db:"id"`
+	UserID     uuid.UUID `db:"user_id"`
+	ActionDate time.Time `db:"action_date"`
+	Action     string    `db:"action"`
+	Metadata   []byte    `db:"metadata"`
 }
 
 type EventsCountToUserDao struct {

@@ -203,10 +203,17 @@ func (p *PgUserActivityHistoryStorage) SaveAll(ctx context.Context, dao []models
 }
 
 func (p *PgUserActivityHistoryStorage) GetByUserID(ctx context.Context, userID uuid.UUID, fromDate, toDate *time.Time) ([]models.ActivityHistoryDao, error) {
-	queryBuilder := sqlbuilder.Select("period.id, period.from_date, period.to_date, activity.period_id, activity.user_id, activity.actions_count")
+	queryBuilder := sqlbuilder.Select(
+		"period.id AS \"period.id\"",
+		"period.from_date AS \"period.from_date\"",
+		"period.to_date AS \"period.to_date\"",
+		"activity.period_id AS \"activity.period_id\"",
+		"activity.user_id AS \"activity.user_id\"",
+		"activity.actions_count AS \"activity.actions_count\"",
+	)
 
 	queryBuilder = queryBuilder.
-		From(queryBuilder.As(userActivityTableName, "activity")).
+		From(queryBuilder.As(userActivityHistoryTableName, "activity")).
 		JoinWithOption(sqlbuilder.InnerJoin, queryBuilder.As(activityPeriodsTableName, "period"), "(period.id = activity.period_id)").
 		Where(queryBuilder.Equal("activity.user_id", userID))
 
@@ -236,10 +243,17 @@ func (p *PgUserActivityHistoryStorage) GetByUserID(ctx context.Context, userID u
 }
 
 func (p *PgUserActivityHistoryStorage) GetAll(ctx context.Context, fromDate, toDate *time.Time) ([]models.ActivityHistoryDao, error) {
-	queryBuilder := sqlbuilder.Select("period.id, period.from_date, period.to_date, activity.period_id, activity.user_id, activity.actions_count")
+	queryBuilder := sqlbuilder.Select(
+		"period.id AS \"period.id\"",
+		"period.from_date AS \"period.from_date\"",
+		"period.to_date AS \"period.to_date\"",
+		"activity.period_id AS \"activity.period_id\"",
+		"activity.user_id AS \"activity.user_id\"",
+		"activity.actions_count AS \"activity.actions_count\"",
+	)
 
 	queryBuilder = queryBuilder.
-		From(queryBuilder.As(userActivityTableName, "activity")).
+		From(queryBuilder.As(userActivityHistoryTableName, "activity")).
 		JoinWithOption(sqlbuilder.InnerJoin, queryBuilder.As(activityPeriodsTableName, "period"), "(period.id = activity.period_id)")
 
 	if fromDate != nil {
@@ -298,7 +312,7 @@ func (p *PgActivityPeriodsStorage) GetLastActivityPeriod(ctx context.Context) (*
 
 	var dao = new(models.ActivityPeriodDao)
 
-	err := p.client.SelectContext(ctx, &dao, query, args...)
+	err := p.client.GetContext(ctx, dao, query, args...)
 
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, services.ErrorActivityPeriodNotFound

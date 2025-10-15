@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/huandu/go-sqlbuilder"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"os"
@@ -18,6 +19,8 @@ import (
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
+
+	sqlbuilder.DefaultFlavor = sqlbuilder.PostgreSQL
 
 	cfg := config.Config{}
 

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/google/uuid"
 	"time"
 	"user-activity-service/dto"
@@ -25,12 +26,18 @@ func (a *ActivityService) SaveUserActivity(ctx context.Context, activityDto *dto
 		return err
 	}
 
+	if activityDto.Metadata == nil {
+		activityDto.Metadata = make(map[string]interface{})
+	}
+
+	metadataBytes, _ := json.Marshal(activityDto.Metadata)
+
 	activityInfo := &models.UserActivityDao{
 		ID:         uuid.New(),
 		UserID:     userID,
 		ActionDate: time.Now().UTC(),
 		Action:     activityDto.Action,
-		Metadata:   activityDto.Metadata,
+		Metadata:   metadataBytes,
 	}
 
 	return a.activityRepository.Save(ctx, activityInfo)
@@ -53,10 +60,16 @@ func (a *ActivityService) GetUserActivities(ctx context.Context, query *dto.GetU
 	mappedResult.Activities = make([]dto.UserActivityEventDto, len(activities))
 
 	for i, activity := range activities {
+		parsedMetadata := make(map[string]interface{})
+
+		if err = json.Unmarshal(activity.Metadata, &parsedMetadata); err != nil {
+			return nil, err
+		}
+
 		mappedResult.Activities[i] = dto.UserActivityEventDto{
 			ActionDate: activity.ActionDate,
 			Action:     activity.Action,
-			Metadata:   activity.Metadata,
+			Metadata:   parsedMetadata,
 		}
 	}
 
@@ -74,20 +87,26 @@ func (a *ActivityService) GetUsersActivities(ctx context.Context, query *dto.Get
 	mappedResult.UserActivities = make(map[uuid.UUID][]dto.UserActivityEventDto)
 
 	for _, activity := range activities {
-		currentEvents, ok := mappedResult.UserActivities[activity.ID]
+		currentEvents, ok := mappedResult.UserActivities[activity.UserID]
 
 		if !ok {
 			currentEvents = make([]dto.UserActivityEventDto, 0)
-			mappedResult.UserActivities[activity.ID] = currentEvents
+			mappedResult.UserActivities[activity.UserID] = currentEvents
+		}
+
+		parsedMetadata := make(map[string]interface{})
+
+		if err = json.Unmarshal(activity.Metadata, &parsedMetadata); err != nil {
+			return nil, err
 		}
 
 		currentEvents = append(currentEvents, dto.UserActivityEventDto{
 			ActionDate: activity.ActionDate,
 			Action:     activity.Action,
-			Metadata:   activity.Metadata,
+			Metadata:   parsedMetadata,
 		})
 
-		mappedResult.UserActivities[activity.ID] = currentEvents
+		mappedResult.UserActivities[activity.UserID] = currentEvents
 	}
 
 	return mappedResult, nil
@@ -117,7 +136,7 @@ func (a *ActivityService) GetUserActivityHistories(ctx context.Context, query *d
 		}
 	}
 
-	return activityHistories, nil
+	return mappedResult, nil
 }
 
 func (a *ActivityService) GetUsersActivityHistories(ctx context.Context, query *dto.GetActivitiesQuery) (interface{}, error) {
@@ -131,11 +150,11 @@ func (a *ActivityService) GetUsersActivityHistories(ctx context.Context, query *
 	mappedResult.UserActivities = make(map[uuid.UUID][]dto.UserActivityStatisticDto)
 
 	for _, activity := range activityHistories {
-		currentEvents, ok := mappedResult.UserActivities[activity.ID]
+		currentEvents, ok := mappedResult.UserActivities[activity.UserID]
 
 		if !ok {
 			currentEvents = make([]dto.UserActivityStatisticDto, 0)
-			mappedResult.UserActivities[activity.ID] = currentEvents
+			mappedResult.UserActivities[activity.UserID] = currentEvents
 		}
 
 		currentEvents = append(currentEvents, dto.UserActivityStatisticDto{
@@ -144,8 +163,8 @@ func (a *ActivityService) GetUsersActivityHistories(ctx context.Context, query *
 			ActionsCount: activity.ActionsCount,
 		})
 
-		mappedResult.UserActivities[activity.ID] = currentEvents
+		mappedResult.UserActivities[activity.UserID] = currentEvents
 	}
 
-	return activityHistories, nil
+	return mappedResult, nil
 }

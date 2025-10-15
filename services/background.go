@@ -51,12 +51,14 @@ func (b *BackgroundActivityService) process(ctx context.Context) bool {
 		return false
 	}
 
-	if (*lastPeriodDate).Add(b.cfg.EventsPeriodDuration).After(nowDate) {
+	fromDate := *lastPeriodDate
+
+	if lastPeriodDate.Add(b.cfg.EventsPeriodDuration).After(nowDate) {
 		//TODO: logging
 		return false
 	}
 
-	if err = b.calculateEventsCount(ctx, *lastPeriodDate, (*lastPeriodDate).Add(b.cfg.EventsPeriodDuration)); err != nil {
+	if err = b.calculateEventsCount(ctx, fromDate, fromDate.Add(b.cfg.EventsPeriodDuration)); err != nil {
 		return false
 	}
 
@@ -88,16 +90,20 @@ func (b *BackgroundActivityService) initLastCalculatedPeriodDate(ctx context.Con
 }
 
 func (b *BackgroundActivityService) calculateEventsCount(ctx context.Context, fromDate, toDate time.Time) error {
-	eventsCount, err := b.activityRepository.GetEventsCount(ctx, fromDate, toDate)
-
-	if err != nil {
-		return err
-	}
-
 	newPeriod := &models.ActivityPeriodDao{
 		ID:       uuid.New(),
 		FromDate: fromDate,
 		ToDate:   toDate,
+	}
+
+	if err := b.activityPeriodsRepository.Save(ctx, newPeriod); err != nil {
+		return err
+	}
+
+	eventsCount, err := b.activityRepository.GetEventsCount(ctx, fromDate, toDate)
+
+	if err != nil {
+		return err
 	}
 
 	var periodActivities = make([]models.UserActivityHistoryDao, len(eventsCount))
@@ -108,10 +114,6 @@ func (b *BackgroundActivityService) calculateEventsCount(ctx context.Context, fr
 			UserID:       event.UserID,
 			ActionsCount: event.EventsCount,
 		}
-	}
-
-	if err = b.activityPeriodsRepository.Save(ctx, newPeriod); err != nil {
-		return err
 	}
 
 	return b.activityHistoryRepository.SaveAll(ctx, periodActivities)

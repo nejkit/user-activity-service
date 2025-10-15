@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -9,7 +8,7 @@ func InitEngine(userHandler *UserHandler, activityHandler *ActivityHandler) *gin
 	r := gin.Default()
 
 	//TODO: cors config
-	r.Use(cors.New(cors.Config{}))
+	//r.Use(cors.New(cors.Config{}))
 
 	v1 := r.Group("/api/v1")
 
