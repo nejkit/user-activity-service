@@ -24,14 +24,5 @@ services:
     depends_on:
       - storage
 
-    environment:
-      BACKGROUND_WORKER_INTERVAL: 1m
-      BACKGROUND_WORKER_PERIOD_DURATION: 10m
-      DATABASE_HOST: storage
-      DATABASE_PORT: 5432
-      DATABASE_USERNAME: admin
-      DATABASE_PASSWORD: admin
-      DATABASE_DB_NAME: activityservice
-      APP_PORT: 8080
-      LOG_LEVEL: INFO
-      CORS_ORIGINS: http://localhost
+    env_file:
+      - .env.example
