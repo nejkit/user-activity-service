@@ -26,6 +26,14 @@
 
 ---
 
+## ️⚙️ Local run
+Setup envs
+```bash
+go run cmd/main.go
+```
+
+---
+
 ## ️⚙️ Docker build
 
 ```bash

@@ -31,6 +31,7 @@ func main() {
 	db, err := sqlx.Connect("postgres", cfg.DatabaseConfig.ToConnectionString())
 
 	if err != nil {
+		logger.WithError(err).Error("failed to connect to database")
 		os.Exit(1)
 	}
 
