@@ -37,6 +37,7 @@ docker build . \
 
 ## 📦 Dependencies
 - [React Client Demo](https://github.com/nejkit/react-client-demo)
+- [Postgres](https://hub.docker.com/_/postgres)
 
 
 ---
