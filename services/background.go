@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
+	logger "github.com/sirupsen/logrus"
 	"sync"
 	"time"
 	"user-activity-service/config"
@@ -31,6 +32,7 @@ func (b *BackgroundActivityService) Run(ctx context.Context) {
 
 		default:
 			if withRetry := b.process(ctx); withRetry {
+				logger.Infoln("process next period without pause")
 				continue
 			}
 
@@ -46,21 +48,28 @@ func (b *BackgroundActivityService) process(ctx context.Context) bool {
 	nowDate := time.Now().UTC()
 	lastPeriodDate, err := b.initLastCalculatedPeriodDate(ctx)
 
+	logger.
+		WithField("lastPeriodDate", lastPeriodDate).
+		Infoln("calculate activity statistic")
+
 	if err != nil {
-		//TODO: logging
+		logger.WithError(err).Errorln("failed get last period date")
 		return false
 	}
 
 	fromDate := *lastPeriodDate
 
 	if lastPeriodDate.Add(b.cfg.EventsPeriodDuration).After(nowDate) {
-		//TODO: logging
+		logger.Infoln("activity period not be ended for calculate, cancel processing")
 		return false
 	}
 
 	if err = b.calculateEventsCount(ctx, fromDate, fromDate.Add(b.cfg.EventsPeriodDuration)); err != nil {
+		logger.WithError(err).Errorln("failed process new activity period")
 		return false
 	}
+
+	logger.Infoln("activity period processed successfully")
 
 	return lastPeriodDate.Add(b.cfg.EventsPeriodDuration).Before(nowDate)
 }
@@ -96,13 +105,13 @@ func (b *BackgroundActivityService) calculateEventsCount(ctx context.Context, fr
 		ToDate:   toDate,
 	}
 
-	if err := b.activityPeriodsRepository.Save(ctx, newPeriod); err != nil {
-		return err
-	}
-
 	eventsCount, err := b.activityRepository.GetEventsCount(ctx, fromDate, toDate)
 
 	if err != nil {
+		return err
+	}
+
+	if err = b.activityPeriodsRepository.Save(ctx, newPeriod); err != nil {
 		return err
 	}
 
@@ -114,6 +123,11 @@ func (b *BackgroundActivityService) calculateEventsCount(ctx context.Context, fr
 			UserID:       event.UserID,
 			ActionsCount: event.EventsCount,
 		}
+	}
+
+	if len(periodActivities) == 0 {
+		logger.Infoln("period has not user activity, save empty period")
+		return nil
 	}
 
 	return b.activityHistoryRepository.SaveAll(ctx, periodActivities)

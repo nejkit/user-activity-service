@@ -6,22 +6,23 @@ import (
 )
 
 type Config struct {
-	BackgroundWorkerConfig
-	DatabaseConfig
-	ApplicationPort int
+	BackgroundWorkerConfig `envPrefix:"BACKGROUND_WORKER_"`
+	DatabaseConfig         `envPrefix:"DATABASE_"`
+	ApplicationPort        int    `env:"APP_PORT" envDefault:"80"`
+	LoggerLevel            string `env:"LOG_LEVEL" envDefault:"INFO"`
 }
 
 type BackgroundWorkerConfig struct {
-	Interval             time.Duration
-	EventsPeriodDuration time.Duration
+	Interval             time.Duration `env:"INTERVAL" envDefault:"10s"`
+	EventsPeriodDuration time.Duration `env:"PERIOD_DURATION" envDefault:"1m"`
 }
 
 type DatabaseConfig struct {
-	Host     string
-	Port     int
-	Username string
-	Password string
-	DbName   string
+	Host     string `env:"HOST" envDefault:"localhost"`
+	Port     int    `env:"PORT" envDefault:"5432"`
+	Username string `env:"USERNAME" envDefault:"postgres"`
+	Password string `env:"PASSWORD" envDefault:"postgres"`
+	DbName   string `env:"DB_NAME" envDefault:"postgres"`
 }
 
 func (d *DatabaseConfig) ToConnectionString() string {

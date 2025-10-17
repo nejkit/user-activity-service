@@ -10,7 +10,7 @@ func InitEngine(userHandler *UserHandler, activityHandler *ActivityHandler) *gin
 
 	//TODO: cors config
 	cfg := cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowOrigins:     []string{"http://localhost"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,

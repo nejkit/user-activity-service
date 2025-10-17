@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	logger "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 
@@ -11,18 +12,24 @@ import (
 )
 
 type Server struct {
-	engine *gin.Engine
-	port   int
+	engine            *gin.Engine
+	port              int
+	ServerStoppedChan chan struct{}
 }
 
 func NewHttpServer(engine *gin.Engine, port int) *Server {
 	return &Server{
-		engine: engine,
-		port:   port,
+		engine:            engine,
+		port:              port,
+		ServerStoppedChan: make(chan struct{}),
 	}
 }
 
 func (s *Server) Run(shutdownChan <-chan struct{}) error {
+	defer func() {
+		s.ServerStoppedChan <- struct{}{}
+		close(s.ServerStoppedChan)
+	}()
 	srv := &http.Server{
 		Addr:        fmt.Sprintf(":%d", s.port),
 		Handler:     s.engine,
@@ -41,6 +48,7 @@ func (s *Server) Run(shutdownChan <-chan struct{}) error {
 	case <-shutdownChan:
 		err := srv.Shutdown(context.Background())
 		if err != nil {
+			logger.WithError(err).Errorln("error stop http server")
 			return err
 		}
 
