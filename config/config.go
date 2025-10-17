@@ -8,8 +8,9 @@ import (
 type Config struct {
 	BackgroundWorkerConfig `envPrefix:"BACKGROUND_WORKER_"`
 	DatabaseConfig         `envPrefix:"DATABASE_"`
-	ApplicationPort        int    `env:"APP_PORT" envDefault:"80"`
-	LoggerLevel            string `env:"LOG_LEVEL" envDefault:"INFO"`
+	ApplicationPort        int      `env:"APP_PORT" envDefault:"8080"`
+	LoggerLevel            string   `env:"LOG_LEVEL" envDefault:"INFO"`
+	CorsOrigins            []string `env:"CORS_ORIGINS" envDefault:"*" envSeparator:","`
 }
 
 type BackgroundWorkerConfig struct {

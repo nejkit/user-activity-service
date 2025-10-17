@@ -48,7 +48,7 @@ func main() {
 
 	go backgroundService.Run(ctx)
 
-	engine := handlers.InitEngine(usersHandler, activityHandler)
+	engine := handlers.InitEngine(usersHandler, activityHandler, cfg.CorsOrigins)
 
 	httpServer := server.NewHttpServer(engine, cfg.ApplicationPort)
 	shutdownChan := make(chan struct{})

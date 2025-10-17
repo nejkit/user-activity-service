@@ -5,12 +5,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitEngine(userHandler *UserHandler, activityHandler *ActivityHandler) *gin.Engine {
+func InitEngine(userHandler *UserHandler, activityHandler *ActivityHandler, corsOrigins []string) *gin.Engine {
 	r := gin.Default()
 
 	//TODO: cors config
 	cfg := cors.Config{
-		AllowOrigins:     []string{"http://localhost"},
+		AllowOrigins:     corsOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,
